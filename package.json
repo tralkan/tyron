@@ -1,0 +1,37 @@
+{
+    "name": "tyron",
+    "version": "0.1.1",
+    "scripts": {
+        "d": "next dev",
+        "b": "next build && prettier -w .",
+        "start": "next start",
+        "lint": "next lint"
+    },
+    "dependencies": {
+        "@alchemy/aa-accounts": "^0.1.1",
+        "@alchemy/aa-alchemy": "^0.1.1",
+        "@alchemy/aa-core": "^0.1.1",
+        "@metamask/sdk": "^0.10.1",
+        "@types/node": "18.18.6",
+        "@types/react": "18.2.31",
+        "@types/react-dom": "18.2.14",
+        "@web3modal/wagmi": "3.1.0",
+        "eslint": "8.52.0",
+        "eslint-config-next": "13.5.6",
+        "next": "^14.0.0",
+        "react": "18.2.0",
+        "react-dom": "18.2.0",
+        "typescript": "5.2.2",
+        "viem": "^1.17.2",
+        "wagmi": "^1.4.2"
+    },
+    "devDependencies": {
+        "prettier": "^2.6.2"
+    },
+    "prettier": {
+        "trailingComma": "es5",
+        "tabWidth": 4,
+        "semi": false,
+        "singleQuote": true
+    }
+}
