@@ -2,25 +2,18 @@ import Head from 'next/head'
 import Image from 'next/image'
 import styles from '@/styles/Home.module.css'
 import { useEffect, useState } from 'react'
-import { createWalletClient, custom } from 'viem'
-import { useWeb3ModalState } from '@web3modal/wagmi/react'
-import { WalletClientSigner, getChain } from '@alchemy/aa-core'
-import { AlchemyProvider } from '@alchemy/aa-alchemy'
-import {
-    LightSmartContractAccount,
-    getDefaultLightAccountFactory,
-} from '@alchemy/aa-accounts'
-import { useAccount, useBalance } from 'wagmi'
-import { MetaMaskSDK } from '@metamask/sdk'
+import { useAccount } from 'wagmi'
 import { AAWallet } from '../../components'
-
-const apiKey = process.env.NEXT_PUBLIC_ALCHEMY_KEY || ''
+import { MMSDK, aa } from '@/mixins/alchemy'
+import { getChain } from '@alchemy/aa-core'
+import { useWeb3ModalState } from '@web3modal/wagmi/react'
 
 export default function Home() {
+    const { selectedNetworkId } = useWeb3ModalState()
+
     const { address } = useAccount()
     console.log('eoa:', address)
 
-    const { selectedNetworkId } = useWeb3ModalState()
     const [isNetworkSwitchHighlighted, setIsNetworkSwitchHighlighted] =
         useState(false)
     const [isConnectHighlighted, setIsConnectHighlighted] = useState(false)
@@ -31,82 +24,43 @@ export default function Home() {
     }
 
     const create = () => {
-        const chain = getChain(selectedNetworkId!)
-        const MMSDK = new MetaMaskSDK({
-            dappMetadata: {
-                name: 'Tyron',
-            },
-        })
-
         MMSDK.connect()
             .then(async (accounts) => {
                 console.log(
                     'MetaMask SDK is connected',
                     JSON.stringify(accounts, null, 2)
                 )
-                const providerETH = MMSDK.getProvider()
 
-                const clientAA = createWalletClient({
-                    chain: chain,
-                    transport: custom(providerETH!),
-                })
-
-                // this can now be used as an owner for a Smart Contract Account
-                const signer = new WalletClientSigner(
-                    clientAA,
-                    'json-rpc' //signerType
-                )
-
-                //@review
-                const entry_point = '0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789'
-
-                // Create a provider with your EOA as the smart account owner, this provider is used to send user operations from your smart account and interact with the blockchain
-                const providerAA = new AlchemyProvider({
-                    apiKey, // Replace with your Alchemy API key, you can get one at https://dashboard.alchemy.com/
-                    chain,
-                    // Entrypoint address, you can use a different entrypoint if needed, check out https://docs.alchemy.com/reference/eth-supportedentrypoints for all the supported entrypoints
-                    entryPointAddress: entry_point,
-                }).connect(
-                    (rpcClient) =>
-                        new LightSmartContractAccount({
-                            //@review
-                            entryPointAddress: entry_point,
-                            chain: rpcClient.chain,
-                            owner: signer,
-                            //@review
-                            factoryAddress: getDefaultLightAccountFactory(
-                                rpcClient.chain
-                            ), // Default address for Light Account on Sepolia, you can replace it with your own.
-                            rpcClient,
-                        })
-                )
-
-                // Logging the smart account address -- please fund this address with some SepoliaETH in order for the user operations to be executed successfully
-                providerAA
+                const account = aa(selectedNetworkId!)
+                await account.providerAA
                     .getAddress()
                     .then(async (address: string) => {
+                        // Logging the smart account address -- please fund this address with some SepoliaETH in order for the user operations to be executed successfully
                         console.log('aa:', address)
 
                         //@dev smart contract account creation
                         // Send a user operation from your smart contract account
                         const aaa = address.substring(2)
-                        const { hash } = await providerAA.sendUserOperation({
-                            target: `0x${aaa}`, // Replace with the desired target address
-                            data: '0x', // Replace with the desired call data
-                            value: BigInt(0), // value: bigint or undefined
-                        })
+                        const { hash } =
+                            await account.providerAA.sendUserOperation({
+                                target: `0x${aaa}`, // Replace with the desired target address
+                                data: '0x', // Replace with the desired call data
+                                value: BigInt(0), // value: bigint or undefined
+                            })
 
-                        console.log('aa creation: ', hash) // Log the user operation hash
+                        console.log('aa creation txn: ', hash) // Log the user operation hash
 
                         // get owner
-                        providerAA.account
+                        await account.providerAA.account
                             .getOwnerAddress()
                             .then((address: string) =>
                                 console.log('signer:', address)
                             )
-                            .catch((err) => console.error('signer: ' + err))
+                            .catch((err: string) =>
+                                console.error('signer: ' + err)
+                            )
                     })
-                    .catch((err) => console.error('aa: ' + err))
+                    .catch((err: string) => console.error('aa: ' + err))
             })
             .catch((err) => console.error(err))
     }
@@ -174,7 +128,17 @@ export default function Home() {
             <main className={styles.main}>
                 <div className={styles.wrapper}>
                     <div className={styles.container}>
-                        <h1>Tyron Self-Sovereign Identity Protocol</h1>
+                        <div className={styles.tyronLogo}>
+                            <Image
+                                src="/ssi_$tyron.svg"
+                                alt="Tyron"
+                                height="40"
+                                width="120"
+                            />
+                        </div>
+                        <h2 className={styles.title}>
+                            Self-Sovereign Identity Protocol
+                        </h2>
                         <div className={styles.content}>
                             <ul>
                                 <li>
@@ -208,8 +172,7 @@ export default function Home() {
                                     to change networks.
                                 </li>
                                 <li>
-                                    Create a TyronSSI Account with account
-                                    abstraction:{' '}
+                                    Create a TyronSSI account:{' '}
                                     <span
                                         onClick={create}
                                         className={styles.button}
@@ -218,7 +181,7 @@ export default function Home() {
                                     </span>
                                 </li>
                                 <li>
-                                    Open account wallet:{' '}
+                                    Open the account wallet:{' '}
                                     <span
                                         onClick={() => setOpen(true)}
                                         className={styles.button}
@@ -230,14 +193,7 @@ export default function Home() {
                             </ul>
                         </div>
                     </div>
-                    <div className={styles.tyronLogo}>
-                        <Image
-                            src="/ssi_$tyron.svg"
-                            alt="Tyron"
-                            height="40"
-                            width="120"
-                        />
-                    </div>
+
                     <div className={styles.footer}>
                         <svg
                             xmlns="http://www.w3.org/2000/svg"

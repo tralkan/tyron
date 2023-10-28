@@ -16,7 +16,7 @@ And using:
 
 -   [MetaMask SDK](https://docs.metamask.io/wallet/how-to/connect/set-up-sdk/javascript/react/)
 
-To connect to networks such as Ethereum, Polygon zkEVM and zkSync.
+To connect to networks such as Ethereum and Polygon.
 
 ## Getting Started
 

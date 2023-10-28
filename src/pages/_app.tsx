@@ -7,20 +7,12 @@ import { useEffect, useState } from 'react'
 import {
     mainnet,
     sepolia,
+    polygon,
+    polygonMumbai,
     polygonZkEvm,
-    polygonZkEvmTestnet,
-    zkSync,
-    zkSyncTestnet,
 } from 'wagmi/chains'
 
-const chains = [
-    mainnet,
-    sepolia,
-    polygonZkEvm,
-    polygonZkEvmTestnet,
-    zkSync,
-    zkSyncTestnet,
-]
+const chains = [mainnet, sepolia, polygon, polygonMumbai, polygonZkEvm]
 
 // 1. Get projectID at https://cloud.walletconnect.com
 
