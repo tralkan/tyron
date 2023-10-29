@@ -3,7 +3,7 @@ import Image from 'next/image'
 import styles from '@/styles/Home.module.css'
 import { useEffect, useState } from 'react'
 import { useAccount } from 'wagmi'
-import { AATransfer, AAWallet } from '../../components'
+import { AATransfer, AAWallet } from '@/components'
 import { MMSDK, aa } from '@/mixins/alchemy'
 import { useWeb3ModalState } from '@web3modal/wagmi/react'
 
