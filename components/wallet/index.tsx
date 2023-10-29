@@ -1,8 +1,7 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import styles from './styles.module.scss'
 import { useBalance } from 'wagmi'
 import { useWeb3ModalState } from '@web3modal/wagmi/react'
-import { getChain } from '@alchemy/aa-core'
 import { aa } from '@/mixins/alchemy'
 
 function Component() {
@@ -12,15 +11,27 @@ function Component() {
         '0x0000000000000000000000000000000000000000'
     )
 
-    if (selectedNetworkId) {
-        const account = aa(selectedNetworkId)
-        account.providerAA
-            .getAddress()
-            .then(async (address: string) => {
-                setAddress(address)
-            })
-            .catch((err: string) => console.error('aaa: ' + err))
+    const update = async () => {
+        if (selectedNetworkId) {
+            const account = aa(selectedNetworkId)
+            await account.providerAA
+                .getAddress()
+                .then((address: string) => {
+                    console.log('[AAA]', address)
+                    setAddress(address)
+                })
+                .catch((err: string) => console.error('[AAA]' + err))
+
+            // verify deployment
+            await account.providerAA.account
+                .isAccountDeployed()
+                .then((res) => console.log('[is aa deployed]', res))
+                .catch((err: string) => console.error('[deployment]' + err))
+        }
     }
+    useEffect(() => {
+        update()
+    }, [selectedNetworkId])
 
     //@dev get balance
     const { data, isError, isLoading } = useBalance({

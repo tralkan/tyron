@@ -26,7 +26,7 @@ export const aa = (chain_id: number) => {
         chain: chain,
         transport: custom(providerETH!),
     })
-    console.log('wallet client: ', JSON.stringify(client, null, 2))
+    console.log('[wallet client]', JSON.stringify(client, null, 2))
 
     // this can now be used as an owner for a Smart Contract Account
     const signer = new WalletClientSigner(
@@ -37,7 +37,7 @@ export const aa = (chain_id: number) => {
     // @review ask for zkEVM support
     const supported_chain = SupportedChains.get(chain_id)
     console.log(
-        'is chain supported by alchemy?',
+        '[is chain supported by alchemy]',
         JSON.stringify(supported_chain, null, 2)
     )
 
