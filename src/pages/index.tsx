@@ -3,16 +3,14 @@ import Image from 'next/image'
 import styles from '@/styles/Home.module.css'
 import { useEffect, useState } from 'react'
 import { useAccount } from 'wagmi'
-import { AAWallet } from '../../components'
+import { AATransfer, AAWallet } from '../../components'
 import { MMSDK, aa } from '@/mixins/alchemy'
-import { getChain } from '@alchemy/aa-core'
 import { useWeb3ModalState } from '@web3modal/wagmi/react'
 
 export default function Home() {
     const { selectedNetworkId } = useWeb3ModalState()
 
     const { address } = useAccount()
-    console.log('eoa:', address)
 
     const [isNetworkSwitchHighlighted, setIsNetworkSwitchHighlighted] =
         useState(false)
@@ -27,7 +25,7 @@ export default function Home() {
         MMSDK.connect()
             .then(async (accounts) => {
                 console.log(
-                    'MetaMask SDK is connected',
+                    '[MetaMask SDK connected]',
                     JSON.stringify(accounts, null, 2)
                 )
 
@@ -36,7 +34,7 @@ export default function Home() {
                     .getAddress()
                     .then(async (address: string) => {
                         // Logging the smart account address -- please fund this address with some SepoliaETH in order for the user operations to be executed successfully
-                        console.log('aa:', address)
+                        console.log('[AAA]', address)
 
                         //@dev smart contract account creation
                         // Send a user operation from your smart contract account
@@ -48,27 +46,20 @@ export default function Home() {
                                 value: BigInt(0), // value: bigint or undefined
                             })
 
-                        console.log('aa creation txn: ', hash) // Log the user operation hash
-
-                        // get owner
-                        await account.providerAA.account
-                            .getOwnerAddress()
-                            .then((address: string) =>
-                                console.log('signer:', address)
-                            )
-                            .catch((err: string) =>
-                                console.error('signer: ' + err)
-                            )
+                        console.log('[AA creation txn]', hash) // Log the user operation hash
                     })
-                    .catch((err: string) => console.error('aa: ' + err))
+                    .catch((err: string) => console.error('[AA]' + err))
             })
-            .catch((err) => console.error(err))
+            .catch((err) => console.error('[AA creation]', err))
     }
 
     const [open, setOpen] = useState(false)
+    const [transfer, setTransfer] = useState(false)
 
     useEffect(() => {
+        console.log('[EOA]', address)
         setOpen(false)
+        setTransfer(false)
     }, [])
 
     return (
@@ -189,6 +180,17 @@ export default function Home() {
                                         Open Wallet
                                     </span>
                                     {open && <AAWallet />}
+                                </li>
+                                <li>
+                                    Click{' '}
+                                    <span
+                                        onClick={() => setTransfer(true)}
+                                        className={styles.button}
+                                    >
+                                        Transfer Account
+                                    </span>{' '}
+                                    to use with another Web3 wallet.
+                                    {transfer && <AATransfer />}
                                 </li>
                             </ul>
                         </div>
